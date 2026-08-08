@@ -1,0 +1,21 @@
+
+> react-example@0.0.0 lint
+> eslint . && tsc --noEmit
+
+
+/app/applet/src/pages/Checkout.tsx
+  72:24  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+/app/applet/src/pages/Checkout.tsx:72:24
+  70 |   });
+  71 |
+> 72 |   const selectedCity = watchDelivery('city');
+     |                        ^^^^^^^^^^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  73 |
+  74 |   useEffect(() => {
+  75 |     if (fulfilmentType === 'delivery') {  react-hooks/incompatible-library
+
+✖ 1 problem (0 errors, 1 warning)
+
