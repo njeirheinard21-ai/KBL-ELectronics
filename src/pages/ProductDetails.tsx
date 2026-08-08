@@ -1,3 +1,4 @@
+import { cn } from "../lib/utils";
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
@@ -17,6 +18,27 @@ interface Review {
   date: string;
   comment: string;
 }
+
+
+const BlurImage = ({ src, alt, isPriority = false, className = '' }: { src: string, alt: string, isPriority?: boolean, className?: string }) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  return (
+    <div className={`overflow-hidden flex items-center justify-center relative ${className}`}>
+      <div className={`absolute inset-0 bg-white/5 transition-opacity duration-500 ${isLoaded ? 'opacity-0' : 'opacity-100'}`} />
+      <img
+        src={src}
+        alt={alt}
+        fetchPriority={isPriority ? "high" : "auto"}
+        loading={isPriority ? "eager" : "lazy"}
+        onLoad={() => setIsLoaded(true)}
+        className={cn(
+          "w-full h-full object-contain mix-blend-screen transition-all duration-700",
+          isLoaded ? "blur-0 scale-100 opacity-100" : "blur-xl scale-95 opacity-0"
+        )}
+      />
+    </div>
+  );
+};
 
 export function ProductDetails() {
   const { id } = useParams<{ id: string }>();
@@ -200,11 +222,11 @@ export function ProductDetails() {
               Save ${Math.round(product.originalPrice - product.price)}
             </span>
           )}
-          <img 
+          <BlurImage 
             src={product.image} 
             alt={product.name} 
-            fetchPriority="high"
-            className="w-full max-w-[280px] sm:max-w-[400px] object-contain mix-blend-screen"
+            isPriority={true}
+            className="w-full max-w-[280px] sm:max-w-[400px] h-[260px] sm:h-[400px]"
           />
         </div>
 

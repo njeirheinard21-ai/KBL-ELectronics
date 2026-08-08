@@ -7,6 +7,30 @@ import { cn } from "../../lib/utils";
 import { useCartStore } from "../../store/useCartStore";
 import { useWishlistStore } from "../../store/useWishlistStore";
 
+
+const BlurImage = ({ src, alt, className = '' }: { src: string, alt: string, className?: string }) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  return (
+    <div className={`overflow-hidden flex items-center justify-center relative w-full h-full ${className}`}>
+      <div className={`absolute inset-0 bg-white/5 transition-opacity duration-500 ${isLoaded ? 'opacity-0' : 'opacity-100'}`} />
+      <img
+        src={src}
+        alt={alt}
+        width={400}
+        height={400}
+        loading="lazy"
+        decoding="async"
+        onLoad={() => setIsLoaded(true)}
+        className={cn(
+          "object-contain h-full w-full transition-all duration-700 mix-blend-screen",
+          isLoaded ? "blur-0 scale-100 opacity-100" : "blur-xl scale-95 opacity-0",
+          "group-hover:scale-110"
+        )}
+      />
+    </div>
+  );
+};
+
 interface ProductCardProps {
   product: Product;
 }
@@ -63,7 +87,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
       {/* Image */}
       <Link to={`/product/${product.id}`} className="relative aspect-square mb-4 sm:mb-6 overflow-hidden rounded-2xl bg-white/5 flex items-center justify-center p-4 sm:p-6 border border-white/5">
-        <img src={product.image} alt={product.name} width={400} height={400} loading="lazy" decoding="async" className="object-contain h-full w-full transition-transform duration-500 group-hover:scale-110 mix-blend-screen" />
+        <BlurImage src={product.image} alt={product.name} />
         {!product.inStock && (
           <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center">
             <span className="rounded bg-black/80 px-4 py-2 text-xs font-bold uppercase tracking-widest text-white border border-white/10">Out of Stock</span>
