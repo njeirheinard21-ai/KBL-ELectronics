@@ -11,22 +11,19 @@ export function AccountOrderDetails() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // In a real app we'd fetch by orderNumber. 
-    // Assuming orderService has a method or we fetch all and filter for now.
-    // Let's mock the fetch for the UI
-    setTimeout(() => {
-      setOrder({
-        id: "mock-1",
-        orderNumber: orderNumber || 'KBL-123456',
-        userId: 'u1',
-        items: [{ productId: '1', name: 'Produit 1', brand: '', image: '', unitPrice: 50000, quantity: 1, lineTotal: 50000 }],
-        shippingAddress: { fullName: 'Jean', street: '', city: 'Douala', postalCode: '', phone: '+237' },
-        subtotal: 45000, shipping: 5000, tax: 0, total: 50000,
-        status: 'shipped',
-        createdAt: { seconds: Date.now() / 1000 } as unknown as any,
-      });
-      setLoading(false);
-    }, 1000);
+    const fetchOrder = async () => {
+      if (!orderNumber) return;
+      try {
+        const { orderService } = await import('../../services/orderService');
+        const fetched = await orderService.getOrderByNumber(orderNumber);
+        setOrder(fetched);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrder();
   }, [orderNumber]);
 
   if (loading) return <div className="py-12 flex justify-center"><div className="w-8 h-8 animate-spin border-4 border-brand-primary border-t-transparent rounded-full" /></div>;

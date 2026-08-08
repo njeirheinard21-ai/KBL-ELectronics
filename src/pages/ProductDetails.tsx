@@ -6,6 +6,8 @@ import { productService } from "../services/productService";
 import { useCartStore } from "../store/useCartStore";
 import { Button } from "../components/ui/button";
 import { useQuery } from "@tanstack/react-query";
+import { analytics } from "../services/analyticsService";
+import { useEffect } from "react";
 import { ProductCard } from "../components/shared/ProductCard";
 
 interface Review {
@@ -70,7 +72,16 @@ export function ProductDetails() {
     enabled: !!id && !!product,
   });
 
+  useEffect(() => {
+    if (product) {
+      analytics.productView(product);
+    }
+  }, [product]);
+
   const handleAddToCart = () => {
+    if (product) {
+      analytics.addToCart(product, 1);
+    }
     if (product) {
       addItem(product, 1);
       setAdded(true);
@@ -307,12 +318,7 @@ export function ProductDetails() {
           {activeTab === 'description' && (
             <div className="prose prose-invert max-w-none text-fg-muted">
               <h3 className="text-2xl font-display font-bold text-white mb-6">Product Overview</h3>
-              <p className="mb-4">
-                Experience the next level of innovation with the {product.name}. Designed to seamlessly integrate into your daily life, this device offers unparalleled performance, stunning aesthetics, and advanced capabilities that empower you to do more.
-              </p>
-              <p>
-                Whether you're a professional seeking reliability or a casual user looking for premium quality, the {product.name} delivers on all fronts. With its robust construction and intuitive interface, it's not just a tool—it's an extension of you.
-              </p>
+              <p className="mb-4">{product.features?.[0] || "" || "Aucune description disponible pour ce produit."}</p>
             </div>
           )}
           
@@ -330,7 +336,7 @@ export function ProductDetails() {
                 </div>
                 <div className="flex justify-between py-3 border-b border-white/10">
                   <span className="text-fg-muted">Model Year</span>
-                  <span className="font-medium text-white">2026</span>
+                  <span className="font-medium text-white">2024</span>
                 </div>
                 <div className="flex justify-between py-3 border-b border-white/10">
                   <span className="text-fg-muted">Warranty</span>

@@ -150,7 +150,7 @@ export function SlideOverCart() {
             items.map(({ product, quantity }) => (
               <div key={product.id} className="flex gap-4">
                 <div className="w-24 h-24 rounded-xl bg-white/5 border border-white/10 p-2 flex-shrink-0 flex items-center justify-center">
-                  <img src={product.image} alt={product.name} className="max-w-full max-h-full object-contain mix-blend-screen" />
+                  <img src={product.image} alt={product.name} width={96} height={96} className="max-w-full max-h-full object-contain mix-blend-screen" loading="lazy" decoding="async" />
                 </div>
                 <div className="flex-1 flex flex-col justify-between">
                   <div>

@@ -1,5 +1,8 @@
 import { useParams, Link, useLocation } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import { SEO } from "../components/SEO";
+import { analytics } from "../services/analyticsService";
+import { useEffect } from "react";
+
 import { ArrowLeft, Filter, SlidersHorizontal, } from "lucide-react";
 import { productService } from "../services/productService";
 import { useState, useMemo } from "react";
@@ -41,6 +44,10 @@ export function Category() {
     },
   });
 
+  useEffect(() => {
+    analytics.pageView(`/categories/${categoryId || 'deals'}`);
+  }, [categoryId, isDealsPage]);
+  
   const displayCategory = isDealsPage
     ? 'Special Deals'
     : categoryId 
@@ -87,31 +94,10 @@ export function Category() {
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-7xl">
-      <Helmet>
-        <title>{`${displayCategory} - KBL Electronics`}</title>
-        <meta name="description" content={`Browse top ${displayCategory} at KBL Electronics.`} />
-        <link rel="canonical" href={`https://kbl-electronics.com/categories/${categoryId || ''}`} />
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
-            "itemListElement": [
-              {
-                "@type": "ListItem",
-                "position": 1,
-                "name": "Home",
-                "item": "https://kbl-electronics.com/"
-              },
-              {
-                "@type": "ListItem",
-                "position": 2,
-                "name": displayCategory,
-                "item": `https://kbl-electronics.com/categories/${categoryId || ''}`
-              }
-            ]
-          })}
-        </script>
-      </Helmet>
+      <SEO 
+        title={displayCategory} 
+        description={`Shop the latest ${displayCategory.toLowerCase()} at KBL Electronics.`} 
+      />
 
       <div className="mb-8">
         <Link to="/" className="inline-flex items-center text-fg-muted hover:text-white transition-colors mb-6 text-sm font-medium">

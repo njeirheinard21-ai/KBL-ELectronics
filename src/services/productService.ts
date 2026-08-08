@@ -107,9 +107,10 @@ export const productService = {
     }
   },
 
-  async getAllProducts(): Promise<Product[]> {
+  async getAllProducts(limitCount: number = 100): Promise<Product[]> {
     try {
-      const snapshot = await withRetry(() => getDocs(collection(db, PRODUCTS_COLLECTION)));
+      const q = query(collection(db, PRODUCTS_COLLECTION), limit(limitCount));
+      const snapshot = await withRetry(() => getDocs(q));
       if (!snapshot.empty) {
         return snapshot.docs.map(mapProduct);
       }
@@ -225,9 +226,9 @@ export const productService = {
     }
   },
 
-  async getProductsByCategory(category: string): Promise<Product[]> {
+  async getProductsByCategory(category: string, limitCount: number = 100): Promise<Product[]> {
     try {
-      const q = query(collection(db, PRODUCTS_COLLECTION), where('category', '==', category));
+      const q = query(collection(db, PRODUCTS_COLLECTION), where('category', '==', category), limit(limitCount));
       const snapshot = await withRetry(() => getDocs(q));
       if (!snapshot.empty) {
         return snapshot.docs.map(mapProduct);

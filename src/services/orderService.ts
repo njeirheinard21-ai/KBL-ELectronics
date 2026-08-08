@@ -1,4 +1,4 @@
-import { collection, getDocs, query, where, orderBy, startAfter, QueryDocumentSnapshot, DocumentData, limit } from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy, startAfter, QueryDocumentSnapshot, DocumentData, limit, getAggregateFromServer, sum, getCountFromServer } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { logger, withRetry } from '../lib/logger';
 
@@ -88,9 +88,32 @@ export const orderService = {
     return true;
   },
 
-  async getAllOrders(): Promise<Order[]> {
+  async getDashboardStats(): Promise<{ totalRevenue: number, totalOrders: number, recentOrders: Order[] }> {
     try {
-      const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
+      const qRecent = query(collection(db, 'orders'), orderBy('createdAt', 'desc'), limit(10));
+      const snapshot = await withRetry(() => getDocs(qRecent));
+      const recentOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
+      
+      const coll = collection(db, 'orders');
+      const aggregateSnapshot = await getAggregateFromServer(coll, {
+        totalRevenue: sum('total')
+      });
+      const countSnapshot = await getCountFromServer(coll);
+      
+      return {
+        totalRevenue: aggregateSnapshot.data().totalRevenue || 0,
+        totalOrders: countSnapshot.data().count || 0,
+        recentOrders
+      };
+    } catch (e: unknown) {
+      const err = e as Error;
+      logger.warn("Failed to fetch dashboard stats", { error: err.message });
+      return { totalRevenue: 0, totalOrders: 0, recentOrders: [] };
+    }
+  },
+  async getAllOrders(limitCount: number = 100): Promise<Order[]> {
+    try {
+      const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'), limit(limitCount));
       const snapshot = await withRetry(() => getDocs(q));
       return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
     } catch (e: unknown) {
@@ -99,7 +122,18 @@ export const orderService = {
       return [];
     }
   },
-
+  async getOrderByNumber(orderNumber: string): Promise<Order | null> {
+    try {
+      const q = query(collection(db, 'orders'), where('orderNumber', '==', orderNumber), limit(1));
+      const snapshot = await withRetry(() => getDocs(q));
+      if (snapshot.empty) return null;
+      return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as Order;
+    } catch (error: unknown) {
+      const err = error as Error;
+      logger.warn("Failed to fetch order", { error: err.message, orderNumber });
+      return null;
+    }
+  },
   async getUserOrders(userId: string): Promise<Order[]> {
     if (!userId) return [];
     try {
@@ -122,3 +156,5 @@ export const orderService = {
     }
   }
 };
+
+

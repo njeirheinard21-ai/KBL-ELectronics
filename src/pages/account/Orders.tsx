@@ -106,7 +106,7 @@ export function AccountOrders() {
                 <div className="flex -space-x-2 overflow-hidden">
                   {order.items.slice(0, 3).map((item: any, i: number) => (
                     <div key={i} className="w-10 h-10 rounded-full border-2 border-[#1C1C1E] bg-white/5 p-1">
-                      <img src={item.image || 'https://via.placeholder.com/40'} alt="" className="w-full h-full object-contain" />
+                      <img src={item.image || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="%23333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3E%3Crect x="3" y="3" width="18" height="18" rx="2" ry="2"%3E%3C/rect%3E%3Ccircle cx="8.5" cy="8.5" r="1.5"%3E%3C/circle%3E%3Cpolyline points="21 15 16 10 5 21"%3E%3C/polyline%3E%3C/svg%3E'} alt="" className="w-full h-full object-contain" />
                     </div>
                   ))}
                   {order.items.length > 3 && (

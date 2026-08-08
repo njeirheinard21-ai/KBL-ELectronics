@@ -44,7 +44,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         )}
         {product.hasDeal && product.originalPrice && (
           <span className="rounded bg-brand-accent px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-white shadow-sm">
-            Save ${Math.round(product.originalPrice - product.price)}
+            Save {Math.round(product.originalPrice - product.price)} FCFA
           </span>
         )}
       </div>
@@ -63,13 +63,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
       {/* Image */}
       <Link to={`/product/${product.id}`} className="relative aspect-square mb-4 sm:mb-6 overflow-hidden rounded-2xl bg-white/5 flex items-center justify-center p-4 sm:p-6 border border-white/5">
-        <img 
-          src={product.image} 
-          alt={product.name} 
-          loading="lazy"
-          decoding="async"
-          className="object-contain h-full w-full transition-transform duration-500 group-hover:scale-110 mix-blend-screen"
-        />
+        <img src={product.image} alt={product.name} width={400} height={400} loading="lazy" decoding="async" className="object-contain h-full w-full transition-transform duration-500 group-hover:scale-110 mix-blend-screen" />
         {!product.inStock && (
           <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center">
             <span className="rounded bg-black/80 px-4 py-2 text-xs font-bold uppercase tracking-widest text-white border border-white/10">Out of Stock</span>
