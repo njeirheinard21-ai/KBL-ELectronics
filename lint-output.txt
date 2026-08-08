@@ -19,27 +19,15 @@ This API returns functions which cannot be memoized without leading to stale UI.
 
 ✖ 1 problem (0 errors, 1 warning)
 
-src/pages/Checkout.tsx(156,28): error TS2304: Cannot find name 'Check'.
-src/pages/Checkout.tsx(171,32): error TS2304: Cannot find name 'ChevronUp'.
-src/pages/Checkout.tsx(171,68): error TS2304: Cannot find name 'ChevronDown'.
-src/pages/Checkout.tsx(199,20): error TS2304: Cannot find name 'ShieldCheck'.
-src/pages/Checkout.tsx(202,20): error TS2304: Cannot find name 'CheckCircle'.
-src/pages/Checkout.tsx(205,20): error TS2304: Cannot find name 'RefreshCcw'.
-src/pages/Checkout.tsx(220,32): error TS2304: Cannot find name 'ChevronUp'.
-src/pages/Checkout.tsx(220,68): error TS2304: Cannot find name 'ChevronDown'.
-src/pages/Checkout.tsx(227,24): error TS2304: Cannot find name 'MapPin'.
-src/pages/Checkout.tsx(231,24): error TS2304: Cannot find name 'Store'.
-src/pages/Checkout.tsx(259,20): error TS2304: Cannot find name 'ShieldCheck'.
-src/pages/Checkout.tsx(262,20): error TS2304: Cannot find name 'CheckCircle'.
-src/pages/Checkout.tsx(265,20): error TS2304: Cannot find name 'RefreshCcw'.
-src/pages/Checkout.tsx(287,20): error TS2304: Cannot find name 'ShieldCheck'.
-src/pages/Checkout.tsx(290,20): error TS2304: Cannot find name 'CheckCircle'.
-src/pages/Checkout.tsx(293,20): error TS2304: Cannot find name 'RefreshCcw'.
-src/pages/Checkout.tsx(309,32): error TS2304: Cannot find name 'ChevronUp'.
-src/pages/Checkout.tsx(309,68): error TS2304: Cannot find name 'ChevronDown'.
-src/pages/Checkout.tsx(327,24): error TS2304: Cannot find name 'CreditCard'.
-src/pages/Checkout.tsx(334,26): error TS2304: Cannot find name 'Banknote'.
-src/pages/Checkout.tsx(348,90): error TS2304: Cannot find name 'ShieldCheck'.
-src/pages/Checkout.tsx(368,24): error TS2304: Cannot find name 'AlertCircle'.
-src/pages/Checkout.tsx(375,24): error TS2304: Cannot find name 'Loader2'.
-src/pages/Checkout.tsx(404,45): error TS2304: Cannot find name 'ArrowRight'.
+src/components/account/EmailVerificationBanner.tsx(7,36): error TS2339: Property 'email_confirmed_at' does not exist on type 'ExtendedUser'.
+src/components/layout/Navbar.tsx(204,91): error TS2339: Property 'phone' does not exist on type 'ExtendedUser'.
+src/components/layout/Navbar.tsx(209,48): error TS2304: Cannot find name 'authService'.
+src/components/layout/Navbar.tsx(445,116): error TS2339: Property 'phone' does not exist on type 'ExtendedUser'.
+src/components/layout/Navbar.tsx(450,48): error TS2304: Cannot find name 'authService'.
+src/pages/account/Dashboard.tsx(12,63): error TS2339: Property 'phone' does not exist on type 'ExtendedUser'.
+src/pages/account/OrderDetails.tsx(27,9): error TS2353: Object literal may only specify known properties, and 'updatedAt' does not exist in type 'Order | ((prevState: Order | null) => Order | null)'.
+src/pages/account/Orders.tsx(37,15): error TS2339: Property 'id' does not exist on type 'ExtendedUser'.
+src/pages/account/Orders.tsx(38,39): error TS2339: Property 'id' does not exist on type 'ExtendedUser'.
+src/pages/account/Profile.tsx(18,42): error TS2339: Property 'phone' does not exist on type 'ExtendedUser'.
+src/services/authService.ts(92,15): error TS2740: Type '{ role: any; displayName: any; id: string; app_metadata: UserAppMetadata; user_metadata: UserMetadata; aud: string; confirmation_sent_at?: string | undefined; ... 19 more ...; banned_until?: string | undefined; }' is missing the following properties from type 'ExtendedUser': emailVerified, isAnonymous, metadata, providerData, and 11 more.
+src/services/authService.ts(108,17): error TS2740: Type '{ role: any; displayName: any; id: string; app_metadata: UserAppMetadata; user_metadata: UserMetadata; aud: string; confirmation_sent_at?: string | undefined; ... 19 more ...; banned_until?: string | undefined; }' is missing the following properties from type 'ExtendedUser': emailVerified, isAnonymous, metadata, providerData, and 11 more.

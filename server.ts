@@ -6,8 +6,10 @@ import rateLimit from "express-rate-limit";
 import cors from "cors";
 
 import { initializeApp, cert, getApps, applicationDefault } from "firebase-admin/app";
+import { getFirestore } from "firebase-admin/firestore";
 import dotenv from "dotenv";
 import { workflowsRouter } from "./src/server/routes/workflows";
+import { paymentsRouter } from "./src/server/routes/payments";
 
 dotenv.config();
 
@@ -20,25 +22,21 @@ if (getApps().length === 0) {
       
       if (keyString.startsWith('-----BEGIN PRIVATE KEY-----')) {
         serviceAccount = {
-          projectId: process.env.VITE_FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID || process.env.GCLOUD_PROJECT || (process.env.AUTHORIZED_SERVICE_ACCOUNT_EMAIL ? (process.env.AUTHORIZED_SERVICE_ACCOUNT_EMAIL || "").match(/@(.+?)\.iam\.gserviceaccount\.com/)?.[1] : "my-app-project-id"),
+          projectId: process.env.VITE_FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID || process.env.GCLOUD_PROJECT || "my-app-project-id",
           clientEmail: process.env.AUTHORIZED_SERVICE_ACCOUNT_EMAIL || "ais-sandbox@ais-europe-west2-06673853bf624.iam.gserviceaccount.com",
           privateKey: keyString.split(String.raw`\n`).join('\n'),
         };
       } else if (!keyString.startsWith('{')) {
-        try {
-          const decoded = Buffer.from(keyString, 'base64').toString('utf8');
-          if (decoded.trim().startsWith('{')) {
-            serviceAccount = JSON.parse(decoded);
-          } else {
-            throw new Error("Invalid format");
-          }
-        } catch {
-          throw new Error("The FIREBASE_SERVICE_ACCOUNT_KEY environment variable must be JSON.");
+        const decoded = Buffer.from(keyString, 'base64').toString('utf8');
+        if (decoded.trim().startsWith('{')) {
+          serviceAccount = JSON.parse(decoded);
+        } else {
+          throw new Error("Invalid format");
         }
       } else {
         serviceAccount = JSON.parse(keyString);
       }
-
+      
       initializeApp({
         credential: cert(serviceAccount),
       });
@@ -59,10 +57,8 @@ if (getApps().length === 0) {
     });
   }
 }
-
-async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
   
   app.set('trust proxy', 1);
 
@@ -89,6 +85,7 @@ async function startServer() {
     app.use(cors(corsOptions));
   } else {
     app.use(cors());
+    app.use(cors());
   }
 
   const apiLimiter = rateLimit({
@@ -111,6 +108,44 @@ async function startServer() {
 
   app.use('/api/workflows', workflowsRouter);
 
+  // Public Tracking API
+  app.get('/api/track', async (req, res) => {
+        const { orderNumber, phone } = req.query;
+    if (!orderNumber || !phone) {
+      return res.status(400).json({ error: 'orderNumber and phone are required' });
+    }
+  
+    const db = getFirestore();
+    try {
+      const q = db.collection('orders').where('orderNumber', '==', orderNumber).limit(1);
+      const snapshot = await q.get();
+      
+      if (snapshot.empty) {
+        return res.status(404).json({ error: 'Order not found' });
+      }
+  
+      const orderDoc = snapshot.docs[0];
+      const orderData = orderDoc.data();
+  
+      // Verify phone matches (simple check)
+      if (orderData.shippingAddress?.phone !== phone) {
+         return res.status(403).json({ error: 'Unauthorized phone number' });
+      }
+  
+      return res.json({
+        status: orderData.status,
+        createdAt: orderData.createdAt,
+        updatedAt: orderData.updatedAt
+      });
+  
+    } catch (error) {
+      console.error('Order tracking failed', error);
+      return res.status(500).json({ error: 'Server error' });
+    }
+  });
+
+  app.use('/api/payments', paymentsRouter);
+
   // API Routes
   app.get("/api/health", (_req, res) => {
     res.json({ status: "ok" });
@@ -123,12 +158,14 @@ async function startServer() {
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
-    const { createServer: createViteServer } = await import("vite");
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
+    import("vite").then(({ createServer: createViteServer }) => {
+      createViteServer({
+        server: { middlewareMode: true },
+        appType: "spa",
+      }).then(vite => {
+        app.use(vite.middlewares);
+      });
     });
-    app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
@@ -137,32 +174,32 @@ async function startServer() {
     });
   }
 
-  const server = app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-  });
-
-  const gracefulShutdown = () => {
-    console.log('Received SIGTERM, shutting down gracefully');
-    server.close(() => {
-      console.log('Closed out remaining connections');
-      process.exit(0);
+  if (process.env.NODE_ENV !== "production" || process.env.RUN_EXPRESS === "true") {
+    const server = app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Server running on http://localhost:${PORT}`);
     });
-    
-    setTimeout(() => {
-      console.error('Could not close connections in time, forcefully shutting down');
-      process.exit(1);
-    }, 10000);
-  };
 
-  process.on('SIGTERM', gracefulShutdown);
-  process.on('SIGINT', gracefulShutdown);
-  
+    const gracefulShutdown = () => {
+      console.log('Received SIGTERM, shutting down gracefully');
+      server.close(() => {
+        console.log('Closed out remaining connections');
+        process.exit(0);
+      });
+
+      setTimeout(() => {
+        console.error('Could not close connections in time, forcefully shutting down');
+        process.exit(1);
+      }, 10000);
+    };
+
+    process.on('SIGTERM', gracefulShutdown);
+    process.on('SIGINT', gracefulShutdown);
+  }
+
   app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     const correlationId = Math.random().toString(36).substring(7);
     console.error(`[Error ${correlationId}] `, (err as Error).stack || (err as Error).message);
     res.status(500).json({ error: 'Internal Server Error', correlationId });
   });
 
-}
-
-startServer().catch(console.error);
+export default app;
